@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>美觀轉盤設計</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .header {
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            font-size: 2.8rem;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ff7e5f, #feb47b);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            color: #a0a7c2;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+        
+        .wheel-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        #chart {
+            position: relative;
+            filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.3));
+        }
+        
+        .spin-button {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(145deg, #ff7e5f, #feb47b);
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(255, 126, 95, 0.4);
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+        
+        .spin-button:hover {
+            transform: translate(-50%, -50%) scale(1.05);
+            box-shadow: 0 12px 25px rgba(255, 126, 95, 0.6);
+        }
+        
+        .spin-button:active {
+            transform: translate(-50%, -50%) scale(0.98);
+        }
+        
+        .spin-button i {
+            font-size: 1.8rem;
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -25px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 50px;
+            z-index: 9;
+            filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.5));
+        }
+        
+        .result-container {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.5s ease;
+        }
+        
+        .result-container h3 {
+            font-size: 1.4rem;
+            margin-bottom: 15px;
+            color: #feb47b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        #result {
+            font-size: 1.8rem;
+            font-weight: bold;
+            min-height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 25px;
+            flex-wrap: wrap;
+        }
+        
+        .stat-box {
+            padding: 15px 25px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            min-width: 150px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ff7e5f;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #a0a7c2;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        .control-btn {
+            padding: 12px 25px;
+            border-radius: 50px;
+            border: none;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .control-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        .footer {
+            margin-top: 40px;
+            color: #a0a7c2;
+            font-size: 0.9rem;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        @media (max-width: 768px) {
+            .wheel-container {
+                padding: 10px;
+            }
+            
+            .header h1 {
+                font-size: 2.2rem;
+            }
+            
+            .spin-button {
+                width: 70px;
+                height: 70px;
+                font-size: 1rem;
+            }
+            
+            .stat-box {
+                min-width: 120px;
+                padding: 12px 20px;
+            }
+            
+            .stat-value {
+                font-size: 1.6rem;
+            }
+        }
+        
+        @keyframes pulse {
+            0% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); }
+        }
+        
+        .pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        .highlight {
+            background: linear-gradient(90deg, rgba(255,126,95,0.2), rgba(254,180,123,0.2)) !important;
+            box-shadow: 0 5px 15px rgba(255, 126, 95, 0.3) !important;
+            border: 1px solid rgba(255, 126, 95, 0.3) !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class="fas fa-gift"></i> 幸運大轉盤</h1>
+            <p>點擊轉盤中央按鈕開始旋轉，測試你的運氣！轉盤包含12種不同的獎品，每次旋轉都會得到隨機結果。</p>
+        </div>
+        
+        <div class="wheel-container">
+            <div id="chart"></div>
+            <button class="spin-button pulse" id="spin-btn">
+                <i class="fas fa-redo-alt"></i>
+            </button>
+            <!-- 指針 -->
+            <svg class="pointer" viewBox="0 0 100 100">
+                <polygon points="50,0 65,100 35,100" fill="#ff7e5f"/>
+                <circle cx="50" cy="90" r="10" fill="#ff7e5f"/>
+            </svg>
+        </div>
+        
+        <div class="result-container">
+            <h3><i class="fas fa-trophy"></i> 抽獎結果</h3>
+            <div id="result">等待旋轉...</div>
+        </div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value" id="spin-count">0</div>
+                <div class="stat-label">旋轉次數</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="last-result">-</div>
+                <div class="stat-label">上次結果</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="win-rate">0%</div>
+                <div class="stat-label">獲獎率</div>
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button class="control-btn" id="auto-spin">
+                <i class="fas fa-play-circle"></i> 自動旋轉 (5次)
+            </button>
+            <button class="control-btn" id="reset-btn">
+                <i class="fas fa-undo-alt"></i> 重置統計
+            </button>
+            <button class="control-btn" id="sound-toggle">
+                <i class="fas fa-volume-up"></i> 音效
+            </button>
+        </div>
+        
+        <div class="footer">
+            <p>© 2023 美觀轉盤設計 | 使用 D3.js 創建 | 僅供娛樂使用</p>
+        </div>
+    </div>
+
+    <script>
+        // 轉盤配置
+        var padding = {top:20, right:20, bottom:20, left:20},
+            w = 500 - padding.left - padding.right,
+            h = 500 - padding.top  - padding.bottom,
+            r = Math.min(w, h)/2,
+            rotation = 0,
+            oldrotation = 0,
+            picked = 100000,
+            oldpick = [];
+            
+        // 使用更美觀的漸層色系
+        var color = d3.scale.ordinal()
+            .range([
+                "#FF6B6B", "#4ECDC4", "#FFD166", "#06D6A0", 
+                "#118AB2", "#073B4C", "#EF476F", "#7209B7",
+                "#3A86FF", "#FB5607", "#8338EC", "#FF006E"
+            ]);
+        
+        // 轉盤數據 - 添加實際內容
+        var data = [
+            {"label":"特等獎", "value":1, "color":"#FF6B6B"},
+            {"label":"一等獎", "value":1, "color":"#4ECDC4"},
+            {"label":"二等獎", "value":1, "color":"#FFD166"},
+            {"label":"三等獎", "value":1, "color":"#06D6A0"},
+            {"label":"四等獎", "value":1, "color":"#118AB2"},
+            {"label":"五等獎", "value":1, "color":"#073B4C"},
+            {"label":"幸運獎", "value":1, "color":"#EF476F"},
+            {"label":"參與獎", "value":1, "color":"#7209B7"},
+            {"label":"鼓勵獎", "value":1, "color":"#3A86FF"},
+            {"label":"驚喜獎", "value":1, "color":"#FB5607"},
+            {"label":"特別獎", "value":1, "color":"#8338EC"},
+            {"label":"紀念獎", "value":1, "color":"#FF006E"}
+        ];
+        
+        // 統計數據
+        let spinCount = 0;
+        let winCount = 0;
+        let lastResult = "-";
+        let isSpinning = false;
+        let soundEnabled = true;
+        let autoSpinCount = 0;
+        const maxAutoSpin = 5;
+        
+        // 創建SVG容器
+        var svg = d3.select('#chart')
+            .append("svg")
+            .data([data])
+            .attr("width", w + padding.left + padding.right)
+            .attr("height", h + padding.top + padding.bottom)
+            .attr("class", "wheel-svg");
+        
+        // 添加轉盤容器
+        var container = svg.append("g")
+            .attr("class", "chartholder")
+            .attr("transform", "translate(" + (w/2 + padding.left) + "," + (h/2 + padding.top) + ")");
+        
+        // 添加轉盤背景圓形
+        container.append("circle")
+            .attr("cx", 0)
+            .attr("cy", 0)
+            .attr("r", r + 10)
+            .attr("fill", "rgba(255,255,255,0.03)")
+            .attr("stroke", "rgba(255,255,255,0.1)")
+            .attr("stroke-width", 2);
+        
+        // 添加轉盤發光效果
+        container.append("circle")
+            .attr("cx", 0)
+            .attr("cy", 0)
+            .attr("r", r + 5)
+            .attr("fill", "none")
+            .attr("stroke", "rgba(255,255,255,0.05)")
+            .attr("stroke-width", 3);
+        
+        // 視覺化組
+        var vis = container.append("g");
+        
+        // 添加轉盤中心圓
+        container.append("circle")
+            .attr("cx", 0)
+            .attr("cy", 0)
+            .attr("r", 20)
+            .attr("fill", "#1a1a2e")
+            .attr("stroke", "rgba(255,255,255,0.2)")
+            .attr("stroke-width", 2);
+        
+        // 餅圖配置
+        var pie = d3.layout.pie()
+            .sort(null)
+            .value(function(d){return d.value;});
+        
+        // 弧生成器
+        var arc = d3.svg.arc()
+            .outerRadius(r)
+            .innerRadius(r * 0.4); // 添加內半徑創建圓環效果
+        
+        // 選擇路徑並使用弧生成器繪製
+        var arcs = vis.selectAll("g.slice")
+            .data(pie(data))
+            .enter()
+            .append("g")
+            .attr("class", "slice")
+            .attr("data-index", function(d, i) { return i; });
+        
+        // 繪製扇形
+        arcs.append("path")
+            .attr("fill", function(d, i){ 
+                return d.data.color || color(i); 
+            })
+            .attr("stroke", "rgba(255,255,255,0.8)")
+            .attr("stroke-width", 1)
+            .attr("d", function(d) { 
+                return arc(d); 
+            })
+            .attr("class", "wheel-segment")
+            .on("mouseover", function(d, i) {
+                if (!isSpinning) {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr("opacity", 0.8);
+                    
+                    // 更新結果預覽
+                    d3.select("#result")
+                        .text(`預覽: ${data[i].label}`)
+                        .classed("highlight", true);
+                }
+            })
+            .on("mouseout", function(d, i) {
+                if (!isSpinning) {
+                    d3.select(this)
+                        .transition()
+                        .duration(200)
+                        .attr("opacity", 1);
+                    
+                    // 清除結果預覽
+                    if (spinCount === 0) {
+                        d3.select("#result")
+                            .text("等待旋轉...")
+                            .classed("highlight", false);
+                    } else {
+                        d3.select("#result")
+                            .text(lastResult)
+                            .classed("highlight", false);
+                    }
+                }
+            });
+        
+        // 添加扇形邊緣高光
+        arcs.append("path")
+            .attr("d", function(d) {
+                // 創建一個稍小的弧來作為高光邊緣
+                var highlightArc = d3.svg.arc()
+                    .outerRadius(r - 1)
+                    .innerRadius(r * 0.4);
+                return highlightArc(d);
+            })
+            .attr("fill", "rgba(255,255,255,0.1)")
+            .attr("class", "segment-highlight");
+        
+        // 添加文字標籤
+        arcs.append("text")
+            .attr("transform", function(d){
+                d.innerRadius = r * 0.4;
+                d.outerRadius = r;
+                d.angle = (d.startAngle + d.endAngle)/2;
+                // 計算文字位置
+                var pos = arc.centroid(d);
+                // 調整文字位置使其在扇形中央
+                pos[0] *= 1.8;
+                pos[1] *= 1.8;
+                
+                // 根據角度調整文字方向
+                var angle = d.angle * 180 / Math.PI;
+                var rotate = angle < 180 ? angle - 90 : angle + 90;
+                
+                return "translate(" + pos + ") rotate(" + rotate + ")";
+            })
+            .attr("text-anchor", "middle")
+            .attr("dy", "0.35em")
+            .attr("class", "wheel-label")
+            .style("font-weight", "bold")
+            .style("font-size", "14px")
+            .style("fill", "white")
+            .style("text-shadow", "1px 1px 3px rgba(0,0,0,0.8)")
+            .text(function(d, i) {
+                return data[i].label;
+            });
+        
+        // 添加轉盤外圍裝飾
+        container.selectAll(".outer-dot")
+            .data(d3.range(0, 360, 30))
+            .enter()
+            .append("circle")
+            .attr("class", "outer-dot")
+            .attr("cx", function(d) { return (r + 15) * Math.cos(d * Math.PI / 180); })
+            .attr("cy", function(d) { return (r + 15) * Math.sin(d * Math.PI / 180); })
+            .attr("r", 3)
+            .attr("fill", "#ff7e5f")
+            .attr("opacity", 0.7);
+        
+        // 添加旋轉動畫
+        container.on("click", spin);
+        document.getElementById("spin-btn").addEventListener("click", spin);
+        
+        // 旋轉函數
+        function spin() {
+            if (isSpinning) return;
+            
+            isSpinning = true;
+            spinCount++;
+            
+            // 移除脈衝動畫
+            d3.select("#spin-btn").classed("pulse", false);
+            
+            // 播放音效
+            if (soundEnabled) playSpinSound();
+            
+            // 計算旋轉
+            var ps = 360 / data.length;
+            var slices = 8 + Math.round(Math.random() * 5); // 旋轉圈數
+            var rng = Math.floor((Math.random() * 1440) + 360 * slices);
+            
+            rotation = (Math.round(rng / ps) * ps);
+            
+            // 計算選中的項目
+            picked = Math.round(data.length - (rotation % 360) / ps);
+            picked = picked >= data.length ? (picked % data.length) : picked;
+            
+            // 調整旋轉角度使指針指向扇形中央
+            rotation += 90 - Math.round(ps / 2);
+            
+            // 更新統計數據
+            updateStats();
+            
+            // 執行旋轉動畫
+            vis.transition()
+                .duration(3000)
+                .ease("cubic-out")
+                .attrTween("transform", rotTween)
+                .each("end", function() {
+                    // 旋轉結束
+                    isSpinning = false;
+                    
+                    // 顯示結果
+                    lastResult = data[picked].label;
+                    d3.select("#result")
+                        .text(lastResult)
+                        .classed("highlight", true);
+                    
+                    // 高亮選中的扇形
+                    d3.selectAll(".wheel-segment")
+                        .attr("opacity", 0.7);
+                    
+                    d3.select(`.slice[data-index="${picked}"] .wheel-segment`)
+                        .transition()
+                        .duration(500)
+                        .attr("opacity", 1);
+                    
+                    // 更新上次結果
+                    d3.select("#last-result").text(lastResult);
+                    
+                    // 恢復脈衝動畫
+                    d3.select("#spin-btn").classed("pulse", true);
+                    
+                    // 播放結果音效
+                    if (soundEnabled) playResultSound();
+                    
+                    // 檢查自動旋轉
+                    if (autoSpinCount > 0) {
+                        autoSpinCount--;
+                        if (autoSpinCount > 0) {
+                            setTimeout(spin, 1500);
+                        }
+                    }
+                });
+        }
+        
+        // 旋轉補間函數
+        function rotTween(to) {
+            var i = d3.interpolate(oldrotation % 360, rotation);
+            return function(t) {
+                return "rotate(" + i(t) + ")";
+            };
+        }
+        
+        // 更新統計數據
+        function updateStats() {
+            d3.select("#spin-count").text(spinCount);
+            
+            // 計算獲獎率（假設前6個為"獎"，後6個為"參與"）
+            winCount = (picked < 6) ? winCount + 1 : winCount;
+            const winRate = spinCount > 0 ? Math.round((winCount / spinCount) * 100) : 0;
+            d3.select("#win-rate").text(winRate + "%");
+        }
+        
+        // 音效函數
+        function playSpinSound() {
+            // 創建簡單的旋轉音效
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(200, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(50, audioContext.currentTime + 3);
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 3);
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 3);
+            } catch (e) {
+                console.log("音效播放失敗，但不影響功能使用");
+            }
+        }
+        
+        function playResultSound() {
+            // 創建簡單的結果音效
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+                oscillator.frequency.exponentialRampToValueAtTime(600, audioContext.currentTime + 0.3);
+                
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                
+                oscillator.start();
+                oscillator.stop(audioContext.currentTime + 0.5);
+            } catch (e) {
+                console.log("音效播放失敗，但不影響功能使用");
+            }
+        }
+        
+        // 自動旋轉功能
+        document.getElementById("auto-spin").addEventListener("click", function() {
+            if (isSpinning) return;
+            autoSpinCount = maxAutoSpin;
+            spin();
+        });
+        
+        // 重置統計功能
+        document.getElementById("reset-btn").addEventListener("click", function() {
+            if (isSpinning) return;
+            
+            spinCount = 0;
+            winCount = 0;
+            lastResult = "-";
+            
+            d3.select("#spin-count").text("0");
+            d3.select("#last-result").text("-");
+            d3.select("#win-rate").text("0%");
+            d3.select("#result").text("等待旋轉...").classed("highlight", false);
+            
+            // 重置所有扇形透明度
+            d3.selectAll(".wheel-segment")
+                .transition()
+                .duration(500)
+                .attr("opacity", 1);
+        });
+        
+        // 音效開關功能
+        document.getElementById("sound-toggle").addEventListener("click", function() {
+            soundEnabled = !soundEnabled;
+            const icon = this.querySelector("i");
+            const text = this.querySelector("span") || document.createElement("span");
+            
+            if (!this.querySelector("span")) {
+                this.appendChild(text);
+            }
+            
+            if (soundEnabled) {
+                icon.className = "fas fa-volume-up";
+                text.textContent = "音效";
+            } else {
+                icon.className = "fas fa-volume-mute";
+                text.textContent = "靜音";
+            }
+            
+            // 添加反饋效果
+            this.classList.add("highlight");
+            setTimeout(() => this.classList.remove("highlight"), 500);
+        });
+        
+        // 初始化
+        updateStats();
+        
+        // 添加鍵盤控制
+        document.addEventListener("keydown", function(e) {
+            if (e.code === "Space" && !isSpinning) {
+                spin();
+                e.preventDefault();
+            }
+        });
+        
+        // 添加初始動畫
+        setTimeout(() => {
+            vis.transition()
+                .duration(1000)
+                .attr("transform", "rotate(5)")
+                .transition()
+                .duration(1000)
+                .attr("transform", "rotate(-5)")
+                .transition()
+                .duration(1000)
+                .attr("transform", "rotate(0)")
+                .each("end", function() {
+                    // 動畫結束後啟用脈衝效果
+                    d3.select("#spin-btn").classed("pulse", true);
+                });
+        }, 500);
+    </script>
+</body>
+</html>

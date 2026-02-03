@@ -1,0 +1,384 @@
+:root {
+    --primary-gold: #eca828;
+    --dark-gold: #d48f0f;
+    --light-gold: #f8d98c;
+    --dark-bg: #1a1a2e;
+    --medium-bg: #16213e;
+    --light-bg: #0f3460;
+    --text-light: #f8f9fa;
+    --text-muted: #adb5bd;
+}
+
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    height: 100vh;
+    overflow: auto;
+}
+
+.sidebar {
+    width: 300px;
+    background-color: #f8f9fa;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    transition: transform 0.3s ease;
+    border-right: 3px solid var(--light-gold);
+    z-index: 1;
+}
+
+.sidebar.hidden {
+    transform: translateX(-100%);
+}
+
+.sidebar h2 {
+    margin-top: 60px;
+    margin-bottom: 10px;
+    color: var(--primary-gold);
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--primary-gold);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+
+}
+
+.sidebar textarea {
+    width: 100%;
+    height: 60%;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    resize: none;
+    box-sizing: border-box;
+}
+
+.sidebar input[type=number] {
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    box-sizing: border-box;
+    border: 1px solid rgba(236, 168, 40, 0.5);
+
+}
+
+
+.sidebar button {
+    margin-top: 20px;
+    background-color: #eca828;
+    color: white;
+    border: none;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.sidebar button:hover {
+    background-color: #eca828;
+}
+
+.main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-image: url("Background 4.svg");
+    background-size: cover;
+}
+
+.toggle-sidebar-btn {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background-color: #eca828;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 16px;
+    z-index: 10;
+    transition: background-color 0.3s ease;
+}
+
+.toggle-sidebar-btn:hover {
+    background-color: #eca828;
+    -webkit-text-stroke: #333;
+}
+
+.main h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--primary-gold);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    margin-bottom: 40px;
+    text-shadow: 0 3px 10px rgba(0, 0, 0, 0.4);
+    position: relative;
+    display: inline-block;
+}
+.main h1::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 200px;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--primary-gold), transparent);
+    border-radius: 2px;
+}
+
+.door {
+    background: var(--primary-gold);
+    width: 70%;
+    height: 150px;
+    overflow: hidden;
+    border-radius: 5px;
+    position: relative;
+    transition: all 0.5s ease-in-out; 
+    box-shadow: 5px 5px 7px #292525;
+
+}
+.door.invisible{
+    opacity: 0;
+}
+
+.boxes {
+    position: absolute;
+    width: 100%;
+    transition: all 0.5s ease-in-out;
+    /* 動畫過渡效果 */
+
+}
+
+.boxes.expanded {
+    width: 500px;
+    height: 350px;
+    justify-content: space-between;
+    align-content: space-between;
+}
+
+
+.box {
+    height: 150px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 52px;
+    background-color: #ffffff68;
+    box-sizing: border-box;
+    /*color: #ffc75e;
+    text-shadow: 2px 2px 2px #292525;*/
+}
+
+
+button#drawButton {
+    background-color: #eca828;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 30px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 20px;
+    height: 100px;
+    width: 200px;
+}
+
+button#drawButton:hover {
+    background-color: #ff8800;
+}
+
+.winner {
+    font-size: 52px;
+    color: var(--primary-gold);
+    text-align: center;
+}
+
+text {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    pointer-events: none;
+}
+
+#chart {
+    opacity: 0;
+    width: 500px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2;
+    transition: all 0.5s ease-in-out; 
+}
+
+#chart.visible {
+    opacity: 1;
+
+}
+#chart.hidden {
+    visibility: hidden;
+}
+
+.flex-column-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    list-style: none; 
+    padding: 0; 
+}
+
+.flex-column-list .list-group-item {
+    flex: 1 1 calc(50% - 1rem);
+    text-align: center; 
+}
+.custom-height {
+    max-height: 90vh; 
+}
+.title-font{
+    font-size: 52px;
+}
+.list-font{
+    font-size: 32px;
+}
+
+/* 響應式設計 */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 1050;
+        width: 300px;
+    }
+    
+    .sidebar.active {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+    }
+    
+    .mobile-toggle-btn {
+        display: block !important;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1040;
+    }
+}
+
+
+/* 動畫效果 */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.lottery-btn {
+    animation: pulse 2s infinite;
+    padding: 1rem 2rem;
+    font-size: 1.25rem;
+}
+
+/* 卡片樣式 */
+.status-card {
+    background: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.winner-display {
+    background: linear-gradient(135deg, var(--primary-color), #ffcc00);
+    border-radius: 20px;
+    padding: 2rem;
+    color: white;
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+}
+
+/* 載入動畫 */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    display: none;
+}
+
+#drawButton {
+    padding: 18px 50px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-gold) 0%, var(--dark-gold) 100%);
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.4s ease;
+    margin: 30px 0;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    position: relative;
+    overflow: hidden;
+    z-index: 1;
+}
+
+#drawButton::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+    transition: 0.5s;
+    z-index: -1;
+}
+
+#drawButton:hover::before {
+    left: 100%;
+}
+
+#drawButton:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(236, 168, 40, 0.6);
+    letter-spacing: 3px;
+}
+
+#drawButton:active {
+    transform: translateY(0);
+}
+
+#drawButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
